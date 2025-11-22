@@ -1,6 +1,7 @@
 #include "../data/BlockModel.h"
 
 BlockModel* BlockModelRegistry::loadModel(const std::string& modelName) {
+	// Will load the model from the assets folder into a BlockModel
 	return nullptr;
 }
 
@@ -31,4 +32,13 @@ void BlockModelRegistry::createDefaultCubeModel() {
 	cubeModel.faceTextures["bottom"] = "default";
 
 	models["cube"] = cubeModel;
+}
+
+std::string BlockIDMappings::loadBlock(const BlockID& blockId) {
+	// Will retrive and load the block name from the mappings config
+	return "";
+}
+
+std::string BlockIDMappings::getBlockName(const BlockID& blockId) {
+	return "";
 }

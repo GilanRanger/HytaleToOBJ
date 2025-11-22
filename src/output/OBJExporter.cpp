@@ -2,15 +2,17 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+#include "stb/stb_image.h"
+#include "stb/stb_image_write.h"
 
-bool OBJExporter::exportMesh(const Mesh& mesh, const std::string& filename,
-	const TextureAtlas* atlas, const ExportOptions& options) {
+bool OBJExporter::exportMesh(const Mesh& mesh, const std::string& filename, 
+    const std::string& assetsPath, const TextureAtlas* atlas, const ExportOptions& options) {
 	std::vector<Mesh> meshes = { mesh };
-	return exportMeshes(meshes, filename, atlas, options);
+	return exportMeshes(meshes, filename, assetsPath, atlas, options);
 }
 
-bool OBJExporter::exportMeshes(const std::vector<Mesh>& meshes, const std::string& filename,
-	const TextureAtlas* atlas, const ExportOptions& options) {
+bool OBJExporter::exportMeshes(const std::vector<Mesh>& meshes, const std::string& filename, 
+    const std::string& assetsPath, const TextureAtlas* atlas, const ExportOptions& options) {
 	if (meshes.empty()) {
 		std::cerr << "No meshes to export" << std::endl;
 		return false;
@@ -44,7 +46,7 @@ bool OBJExporter::exportMeshes(const std::vector<Mesh>& meshes, const std::strin
 
 		if (options.exportTextures && atlas) {
 			std::string texturePath = options.outputDirectory + baseName + "_atlas.png";
-			if (!exportTextureAtlas(*atlas, texturePath)) {
+			if (!exportTextureAtlas(*atlas, assetsPath, texturePath)) {
 				std::cerr << "Warning: Failed to export texture atlas" << std::endl;
 			}
 		}
@@ -195,12 +197,37 @@ bool OBJExporter::writeMTL(const std::string& filename,
     return true;
 }
 
-bool OBJExporter::exportTextureAtlas(const TextureAtlas& atlas,
+bool OBJExporter::exportTextureAtlas(const TextureAtlas& atlas, const std::string& assetsPath,
     const std::string& filename) {
-    std::cerr << "Atlas size: " << atlas.atlasWidth << "x" << atlas.atlasHeight << std::endl;
-    std::cerr << "Output path: " << filename << std::endl;
+    std::vector<unsigned char> atlasPixels(atlas.atlasWidth * atlas.atlasHeight * 4, 0);
 
-    // TODO: Implement with stb_image_write
+    for (const auto& [name, region] : atlas.textureRegions) {
+        // There will have to be a more in-depth system for fetching the textures, likely from BlockModel data
+        std::string texturePath = assetsPath + "/" + name + ".png";
 
-    return false;
+        int width, height, channels;
+        unsigned char* srcPixels = stbi_load(texturePath.c_str(), &width, &height, &channels, 4);
+
+        if (!srcPixels) {
+            std::cerr << "Failed to load texture: " << texturePath << std::endl;
+            continue;
+        }
+
+        // Convert back to UV coordintes
+        uint32_t destX = static_cast<uint32_t>(region.uvMin.u * atlas.atlasWidth);
+        uint32_t destY = static_cast<uint32_t>(region.uvMax.v * atlas.atlasHeight);
+
+        // Blit by row
+        for (uint32_t y = 0; y < region.pixelHeight; y++) {
+            size_t srcOffset = y * width * 4;
+            size_t destOffset = ((destY + y) * atlas.atlasWidth + destX) * 4;
+
+            memcpy(&atlasPixels[destOffset], &srcPixels[srcOffset], region.pixelWidth * 4);
+        }
+
+        stbi_image_free(srcPixels);
+    }
+
+    return stbi_write_png(filename.c_str(), atlas.atlasWidth, atlas.atlasHeight, 4, 
+        atlasPixels.data(), atlas.atlasWidth * 4);
 }

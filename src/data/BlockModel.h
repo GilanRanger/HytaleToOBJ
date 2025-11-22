@@ -1,5 +1,6 @@
 #pragma once
 #include "MeshData.h"
+#include "WorldData.h"
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -38,4 +39,13 @@ public:
 	bool hasModel(const std::string& modelName) const;
 
 	void createDefaultCubeModel();
+};
+
+class BlockIDMappings {
+private:
+	std::unordered_map<BlockID, std::string> blockNames;
+public:
+	std::string loadBlock(const BlockID& blockId);
+
+	std::string getBlockName(const BlockID& blockId);
 };

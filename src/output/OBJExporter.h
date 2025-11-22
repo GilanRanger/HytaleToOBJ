@@ -15,11 +15,13 @@ public:
 		ExportOptions() = default;
 	};
 
-	static bool exportMesh(const Mesh& mesh, const std::string& filename,
-		const TextureAtlas* atlas = nullptr, const ExportOptions& options = ExportOptions());
+	static bool exportMesh(const Mesh& mesh, const std::string& filename, 
+		const std::string& assetsPath, const TextureAtlas* atlas = nullptr, 
+		const ExportOptions& options = ExportOptions());
 
-	static bool exportMeshes(const std::vector<Mesh>& meshes, const std::string& filename,
-		const TextureAtlas* atlas = nullptr, const ExportOptions& options = ExportOptions());
+	static bool exportMeshes(const std::vector<Mesh>& meshes, const std::string& filename, 
+		const std::string& assetsPath, const TextureAtlas* atlas = nullptr, 
+		const ExportOptions& options = ExportOptions());
 
 private:
 	static bool writeOBJ(std::ofstream& file, const std::vector<Mesh>& meshes,
@@ -28,5 +30,6 @@ private:
 	static bool writeMTL(const std::string& filename, const std::vector<Mesh>& meshes,
 		const TextureAtlas* atlas, const ExportOptions& options);
 
-	static bool exportTextureAtlas(const TextureAtlas& atlas, const std::string& filename);
+	static bool exportTextureAtlas(const TextureAtlas& atlas, const std::string& assetsPath,
+		const std::string& filename);
 };
