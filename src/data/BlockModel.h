@@ -45,7 +45,7 @@ class BlockIDMappings {
 private:
 	std::unordered_map<BlockID, std::string> blockNames;
 public:
-	std::string loadBlock(const BlockID& blockId);
+	void parseBlockList(const std::string& data);
 
 	std::string getBlockName(const BlockID& blockId);
 };
